@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test des Valeurs (12–25 ans) — Académie de Performances</title>
+  <meta name="description" content="Questionnaire en ligne pour identifier les 4 valeurs piliers : Réussite, Liberté, Appartenance, Stabilité.">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <img id="brandLogo" alt="Logo" />
+      <h1>Test des Valeurs (12–25 ans)</h1>
+      <p class="subtitle">Découvre ton système de valeurs : <strong>Réussite</strong> • <strong>Liberté</strong> • <strong>Appartenance</strong> • <strong>Stabilité</strong></p>
+    </header>
+
+    <section id="introSection" class="card">
+      <h2>Bienvenue 👋</h2>
+      <p>Ce test rapide (24 questions) t’aide à repérer ce qui te motive le plus dans tes études, ton sport et ta vie de tous les jours.</p>
+      <ul class="bullets">
+        <li>1 question à la fois</li>
+        <li>Résultat immédiat en % sur 4 valeurs</li>
+        <li>Rapport PDF 3 pages (pédagogie, analyse, graphiques)</li>
+      </ul>
+
+      <div class="identite">
+        <label>Prénom / Pseudo
+          <input id="userName" type="text" placeholder="ex. Alex" />
+        </label>
+      </div>
+
+      <button id="startBtn" class="btn primary">Commencer</button>
+    </section>
+
+    <section id="quizSection" class="card hidden">
+      <div class="progressWrap">
+        <div id="progressBar"></div>
+        <span id="progressText"></span>
+      </div>
+
+      <div id="questionWrap">
+        <h2 id="questionText"></h2>
+        <div id="optionsWrap" class="options"></div>
+      </div>
+
+      <div class="navBtns">
+        <button id="prevBtn" class="btn ghost">← Précédent</button>
+        <button id="nextBtn" class="btn primary">Suivant →</button>
+      </div>
+    </section>
+
+    <section id="resultSection" class="card hidden">
+      <div class="resultHeader">
+        <img id="brandLogoResult" alt="Logo">
+        <h2>Ton profil de valeurs</h2>
+        <p id="helloUser"></p>
+      </div>
+
+      <div id="summaryText" class="summary"></div>
+
+      <canvas id="valuesChart" width="800" height="400" aria-label="Graphique des valeurs" role="img"></canvas>
+
+      <div class="grid4">
+        <div class="stat"><span id="pREUSSITE">0%</span><label>Réussite</label></div>
+        <div class="stat"><span id="pLIBERTE">0%</span><label>Liberté</label></div>
+        <div class="stat"><span id="pAPPARTENANCE">0%</span><label>Appartenance</label></div>
+        <div class="stat"><span id="pSTABILITE">0%</span><label>Stabilité</label></div>
+      </div>
+
+      <div class="actions">
+        <button id="restartBtn" class="btn ghost">Recommencer</button>
+        <button id="pdfBtn" class="btn primary">Télécharger le PDF</button>
+      </div>
+
+      <details class="details">
+        <summary>ℹ️ À propos des 4 pôles</summary>
+        <div class="pillars">
+          <h3>Réussite & Performance</h3>
+          <p>Motivation à exceller, atteindre des objectifs, être reconnu pour ses efforts.</p>
+          <h3>Liberté & Autonomie</h3>
+          <p>Besoin d’indépendance, de découvrir, d’innover et d’explorer.</p>
+          <h3>Appartenance & Relations</h3>
+          <p>Importance des liens, de l’équipe, de la famille et du soutien mutuel.</p>
+          <h3>Stabilité & Équilibre</h3>
+          <p>Recherche de sécurité, d’habitudes saines, de cadre et de sérénité.</p>
+        </div>
+      </details>
+    </section>
+
+    <footer class="footer">
+      <p>© Académie de Performances — Test des Valeurs • v1.0</p>
+    </footer>
+  </main>
+
+  <script>
+    // --- Brand Logo (Base64) ---
+    const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAADa4VxPAAAACXBIWXMAAAsSAAALEgHS3X78AAABS0lEQVR4nO3TwQnCMBiF4e9w8Y6p8Jr0n7g2t5rG3pHjW1a1f3GxZQkGq0l3mJrS7wP6m4g5h8kTAAAAAAAAAAAAAAAAAAAAAPw8Cj3f4q3hO3e5+6V8r3t3Y0uB7M7q9oYf2QmYh2b2c7YvYp1j1U8H8qXzqQ8m+2Ff3mJv1pQ8T2v4lVJg7zP3K5jv1bYw3f1m9mCk2b+7mV3Wq0P3bQm7f2m5n5iQy9D8o3v7nq8oYV3nH3gV8m8o3YJ7f2m7k5iQ/8D4b9b9m9aZ8z6j0n8y0c0AAAAAAAAAAAAAAAAAAAAAAAAAAD8N3u4rC2Gm4AAAAASUVORK5CYII=";
+    document.addEventListener("DOMContentLoaded", () => {
+      const logoEl = document.getElementById("brandLogo");
+      const logoEl2 = document.getElementById("brandLogoResult");
+      if (logoEl) logoEl.src = LOGO_BASE64;
+      if (logoEl2) logoEl2.src = LOGO_BASE64;
+    });
+  </script>
+
+  <!-- CDN libs (fast and reliable for GitHub Pages) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="quiz.js"></script>
+</body>
+</html>
