@@ -1,7 +1,6 @@
-/* Test des Valeurs 12–25 — PMP-style © Académie de Performances — v1.0 */
+/* Test des Valeurs 12–25 — v1.2 (logo officiel + valeurs phares) */
 (() => {
   const questions = [
-    // 1–6 Réussite
     { q: "1) Quand tu fais un devoir ou un match, ce qui compte le plus pour toi, c’est…", opts: [
       { t:"Avoir la meilleure note / gagner", k:"REUSSITE" },
       { t:"Avoir appris quelque chose", k:"LIBERTE" },
@@ -38,8 +37,6 @@
       { t:"Tes relations", k:"APPARTENANCE" },
       { t:"Ta constance", k:"STABILITE" },
     ]},
-
-    // 7–12 Liberté
     { q: "7) Si tu avais une journée libre, tu choisirais plutôt…", opts: [
       { t:"Un nouveau défi", k:"REUSSITE" },
       { t:"Explorer, voyager, créer", k:"LIBERTE" },
@@ -76,8 +73,6 @@
       { t:"Liens solides", k:"APPARTENANCE" },
       { t:"Sérénité et cadre sûr", k:"STABILITE" },
     ]},
-
-    // 13–18 Appartenance
     { q: "13) Ton souvenir idéal serait…", opts: [
       { t:"Ton plus grand succès", k:"REUSSITE" },
       { t:"Une aventure créative", k:"LIBERTE" },
@@ -114,8 +109,6 @@
       { t:"Être bien entouré(e)", k:"APPARTENANCE" },
       { t:"Être serein(e), stable", k:"STABILITE" },
     ]},
-
-    // 19–24 Stabilité
     { q: "19) Quand tu commences une activité, tu aimes…", opts: [
       { t:"Voir des résultats rapides", k:"REUSSITE" },
       { t:"Essayer différentes façons", k:"LIBERTE" },
@@ -154,11 +147,7 @@
     ]},
   ];
 
-  const state = {
-    idx: 0,
-    answers: Array(questions.length).fill(null),
-    name: "",
-  };
+  const state = { idx: 0, answers: Array(questions.length).fill(null), name: "" };
 
   const el = (id) => document.getElementById(id);
   const introSection = el("introSection");
@@ -181,37 +170,22 @@
   const pA = el("pAPPARTENANCE");
   const pS = el("pSTABILITE");
   const chartCanvas = el("valuesChart");
+  const valeursPharesBlock = el("valeursPharesBlock");
+  const valeursPharesList = el("valeursPharesList");
 
-  function updateProgress(){
-    const pct = (state.idx / questions.length) * 100;
-    progressBar.style.width = pct + "%";
-    progressText.textContent = state.idx + " / " + questions.length;
-  }
+  function updateProgress(){ const pct = (state.idx / questions.length) * 100; progressBar.style.width = pct + "%"; progressText.textContent = state.idx + " / " + questions.length; }
 
   function renderQuestion(){
     const q = questions[state.idx];
     questionText.textContent = q.q;
     optionsWrap.innerHTML = "";
     q.opts.forEach((opt, i) => {
-      const wrap = document.createElement("div");
-      wrap.className = "option";
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.name = "answer";
-      input.id = "opt"+i;
-      input.value = opt.k;
-
-      const label = document.createElement("label");
-      label.htmlFor = "opt"+i;
-      label.textContent = opt.t;
-
-      const current = state.answers[state.idx];
-      if(current && current.k === opt.k){ input.checked = true; }
-
+      const wrap = document.createElement("div"); wrap.className = "option";
+      const input = document.createElement("input"); input.type = "radio"; input.name = "answer"; input.id = "opt"+i; input.value = opt.k;
+      const label = document.createElement("label"); label.htmlFor = "opt"+i; label.textContent = opt.t;
+      const current = state.answers[state.idx]; if(current && current.k === opt.k){ input.checked = true; }
       wrap.addEventListener("click", () => { input.checked = true; });
-      wrap.appendChild(input);
-      wrap.appendChild(label);
-      optionsWrap.appendChild(wrap);
+      wrap.appendChild(input); wrap.appendChild(label); optionsWrap.appendChild(wrap);
     });
     prevBtn.disabled = (state.idx === 0);
     nextBtn.textContent = (state.idx === questions.length-1) ? "Voir le résultat →" : "Suivant →";
@@ -230,244 +204,149 @@
     const counts = { REUSSITE:0, LIBERTE:0, APPARTENANCE:0, STABILITE:0 };
     state.answers.forEach(a => { if(a && a.k) counts[a.k] += 1; });
     const total = state.answers.filter(Boolean).length || 1;
-    const pct = Object.fromEntries(Object.entries(counts).map(([k,v]) => [k, Math.round((v/total)*100)]));
-    return pct;
+    return Object.fromEntries(Object.entries(counts).map(([k,v]) => [k, Math.round((v/total)*100)]));
   }
+
+  // --- Matrice "valeurs phares" (dominant|secondaire) ---
+  const mapVals = {
+    "REUSSITE|LIBERTE": ["Courage","Ambition","Créativité","Autonomie"],
+    "REUSSITE|APPARTENANCE": ["Dépassement","Fiabilité","Loyauté","Responsabilité"],
+    "REUSSITE|STABILITE": ["Discipline","Constance","Persévérance","Volonté"],
+    "LIBERTE|REUSSITE": ["Créativité","Curiosité","Ambition","Indépendance"],
+    "LIBERTE|APPARTENANCE": ["Authenticité","Ouverture d’esprit","Coopération","Enthousiasme"],
+    "LIBERTE|STABILITE": ["Authenticité","Ouverture d’esprit","Patience","Sérénité"],
+    "APPARTENANCE|REUSSITE": ["Coopération","Loyauté","Fiabilité","Reconnaissance"],
+    "APPARTENANCE|LIBERTE": ["Bienveillance","Curiosité","Enthousiasme","Authenticité"],
+    "APPARTENANCE|STABILITE": ["Respect","Responsabilité","Tolérance","Solidarité"],
+    "STABILITE|REUSSITE": ["Discipline","Constance","Persévérance","Excellence"],
+    "STABILITE|LIBERTE": ["Patience","Sérénité","Autonomie","Équilibre"],
+    "STABILITE|APPARTENANCE": ["Loyauté","Fiabilité","Respect","Solidarité"],
+  };
+  function valeursPhares(domK, secK){ return mapVals[domK + "|" + secK] || ["Respect","Responsabilité","Curiosité","Patience"]; }
 
   let chartInstance = null;
   function renderChart(pct){
     if(chartInstance){ chartInstance.destroy(); }
     chartInstance = new Chart(chartCanvas, {
       type: "bar",
-      data: {
-        labels: ["Réussite","Liberté","Appartenance","Stabilité"],
-        datasets: [{
-          label: "Profil de valeurs (%)",
-          data: [pct.REUSSITE, pct.LIBERTE, pct.APPARTENANCE, pct.STABILITE]
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false }, tooltip: { enabled: true } },
-        scales: { y: { min:0, max:100, ticks:{ stepSize:20 } } }
-      }
+      data: { labels: ["Réussite","Liberté","Appartenance","Stabilité"], datasets: [{ label: "Profil de valeurs (%)", data: [pct.REUSSITE, pct.LIBERTE, pct.APPARTENANCE, pct.STABILITE] }] },
+      options: { responsive: true, plugins: { legend: { display: false }, tooltip: { enabled: true } }, scales: { y: { min:0, max:100, ticks:{ stepSize:20 } } } }
     });
   }
 
   function profileNarrative(pct){
     const entries = Object.entries(pct).sort((a,b) => b[1]-a[1]);
-    const [domK, domV] = entries[0];
-    const [secK, secV] = entries[1];
-
-    const label = (k) => ({
-      REUSSITE: "Réussite & Performance",
-      LIBERTE: "Liberté & Autonomie",
-      APPARTENANCE: "Appartenance & Relations",
-      STABILITE: "Stabilité & Équilibre"
-    }[k]);
-
+    const [domK, domV] = entries[0]; const [secK, secV] = entries[1];
+    const label = (k) => ({ REUSSITE:"Réussite & Performance", LIBERTE:"Liberté & Autonomie", APPARTENANCE:"Appartenance & Relations", STABILITE:"Stabilité & Équilibre" }[k]);
     const shortTip = (k) => ({
       REUSSITE: "Fixe des objectifs clairs, mesure tes progrès et célèbre tes étapes.",
       LIBERTE: "Choisis des méthodes d’apprentissage variées et des projets qui te laissent initier.",
       APPARTENANCE: "Travaille en binôme/équipe, ritualise les temps de feedback et de soutien.",
       STABILITE: "Installe une routine (sommeil, entraînements, révisions) et protège tes créneaux."
     }[k]);
-
     const school = (k) => ({
       REUSSITE: "Révisions par objectifs, planning hebdo, techniques d’examens (fiches chrono, QCM blancs).",
       LIBERTE: "Projets créatifs, mindmaps, exposés choisis, méthodes actives (Feynman, flashcards).",
       APPARTENANCE: "Groupes d’étude, tutorat, explications mutuelles, accountability partner.",
       STABILITE: "Routine stable, checklists, environnement calme, pause 5 min/25 min (Pomodoro)."
     }[k]);
-
     const sport = (k) => ({
       REUSSITE: "Objectifs SMART compétition, stats d’entraînement, imagerie de performance.",
       LIBERTE: "Variété des exercices, jeux libres, choix de stratégies, exploration technique.",
       APPARTENANCE: "Rituels d’équipe, rôle clair, communication positive, cohésion.",
       STABILITE: "Échauffement standardisé, sommeil/récup, suivi charge & nutrition."
     }[k]);
-
     const life = (k) => ({
       REUSSITE: "Entoure-toi de modèles inspirants, tiens un carnet de réussites.",
       LIBERTE: "Garde des espaces perso (créa, musique, voyage), fixe des limites saines.",
       APPARTENANCE: "Entretiens tes amitiés, propose des projets collectifs, gratitude régulière.",
       STABILITE: "Hygiène de vie, gestion du stress par respiration, routines matin/soir."
     }[k]);
-
-    const domLabel = label(domK);
-    const secLabel = label(secK);
-
+    const domLabel = label(domK); const secLabel = label(secK);
     const p1 = `Ton système de valeurs est dominé par <strong>${domLabel}</strong> (${domV}%).`;
     const p2 = `En second, tu valorises <strong>${secLabel}</strong> (${secV}%).`;
     const p3 = `Conseil express : ${shortTip(domK)}`;
-
-    const html = `
-      <div class="narrative">
-        <p>${p1} ${p2}</p>
-        <p>${p3}</p>
-        <div class="narrGrid">
-          <div><h4>Études</h4><p>${school(domK)}</p></div>
-          <div><h4>Sport</h4><p>${sport(domK)}</p></div>
-          <div><h4>Vie perso</h4><p>${life(domK)}</p></div>
-        </div>
-      </div>`;
-
+    const html = `<div class="narrative"><p>${p1} ${p2}</p><p>${p3}</p>
+      <div class="narrGrid"><div><h4>Études</h4><p>${school(domK)}</p></div>
+      <div><h4>Sport</h4><p>${sport(domK)}</p></div>
+      <div><h4>Vie perso</h4><p>${life(domK)}</p></div></div></div>`;
     return { html, domK, secK };
+  }
+
+  function renderValeursPhares(list){
+    valeursPharesList.innerHTML = ""; list.forEach(v => { const li = document.createElement("li"); li.textContent = v; valeursPharesList.appendChild(li); });
+    valeursPharesBlock.classList.remove("hidden");
   }
 
   function showResults(){
     const pct = computePercentages();
     const name = state.name ? `Bonjour ${state.name} — ` : "";
     helloUser.textContent = name + "voici ton résultat :";
-    pR.textContent = pct.REUSSITE + "%";
-    pL.textContent = pct.LIBERTE + "%";
-    pA.textContent = pct.APPARTENANCE + "%";
-    pS.textContent = pct.STABILITE + "%";
-    const { html } = profileNarrative(pct);
-    summaryText.innerHTML = html;
-    renderChart(pct);
+    pR.textContent = pct.REUSSITE + "%"; pL.textContent = pct.LIBERTE + "%"; pA.textContent = pct.APPARTENANCE + "%"; pS.textContent = pct.STABILITE + "%";
+    const { html, domK, secK } = profileNarrative(pct);
+    summaryText.innerHTML = html; renderChart(pct);
+    const vals = valeursPhares(domK, secK); renderValeursPhares(vals);
   }
 
+  // --- PDF (logo centré toutes pages + valeurs phares) ---
   async function generatePDF(){
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ unit: "pt", format: "a4" });
-    const W = pdf.internal.pageSize.getWidth();
-    const M = 42;
-
+    const W = pdf.internal.pageSize.getWidth(); const M = 42;
     const logoImg = document.getElementById("brandLogo").src;
+    const pct = computePercentages(); const entries = Object.entries(pct).sort((a,b)=>b[1]-a[1]);
+    const [domK, domV] = entries[0]; const [secK, secV] = entries[1];
+    const labels = { REUSSITE:"Réussite & Performance", LIBERTE:"Liberté & Autonomie", APPARTENANCE:"Appartenance & Relations", STABILITE:"Stabilité & Équilibre" };
+    const vals = valeursPhares(domK, secK);
 
-    // PAGE 1 — Pédagogie
-    try { pdf.addImage(logoImg, "PNG", (W-64)/2, 28, 64, 64); } catch(e){}
+    // Page 1
+    try { pdf.addImage(logoImg, "JPEG", (W-120)/2, 24, 120, 48); } catch(e){}
     pdf.setFont("helvetica","bold"); pdf.setFontSize(18);
-    pdf.text("Test des Valeurs (12–25 ans)", W/2, 120, { align:"center" });
-    pdf.setFont("helvetica","",12);
-    pdf.text("Les 4 pôles de valeurs", W/2, 142, { align:"center" });
+    pdf.text("Test des Valeurs (12–25 ans)", W/2, 100, { align:"center" });
+    pdf.setFont("helvetica","",12); pdf.text("Les 4 pôles de valeurs", W/2, 120, { align:"center" });
     pdf.setFontSize(11);
     const lines1 = [
-      "Réussite & Performance : motivation à exceller, à atteindre des objectifs et à être reconnu(e).",
+      "Réussite & Performance : motivation à exceller, atteindre des objectifs et être reconnu(e).",
       "Liberté & Autonomie : besoin d’indépendance, de découverte et d’innovation.",
       "Appartenance & Relations : importance des liens, de l’équipe, de la famille et du soutien.",
       "Stabilité & Équilibre : recherche de sécurité, de cadre et d’habitudes saines."
     ];
-    let y = 170;
-    for(const L of lines1){ pdf.text(L, M, y); y += 18; }
-    pdf.setTextColor(150); pdf.setFontSize(9);
-    pdf.text("© Académie de Performances — Rapport personnalisé", W/2, 820, { align:"center" });
-    pdf.setTextColor(0);
+    let y = 150; lines1.forEach(L => { pdf.text(L, M, y); y += 18; });
+    pdf.setTextColor(150); pdf.setFontSize(9); pdf.text("© Académie de Performances — Rapport personnalisé", W/2, 820, { align:"center" }); pdf.setTextColor(0);
 
-    // PAGE 2 — Interprétation personnalisée
+    // Page 2
     pdf.addPage();
-    try { pdf.addImage(logoImg, "PNG", (W-64)/2, 28, 64, 64); } catch(e){}
-    const pct = computePercentages();
-    const entries = Object.entries(pct).sort((a,b)=>b[1]-a[1]);
-    const [domK, domV] = entries[0];
-    const [secK, secV] = entries[1];
-    const label = (k) => ({
-      REUSSITE: "Réussite & Performance",
-      LIBERTE: "Liberté & Autonomie",
-      APPARTENANCE: "Appartenance & Relations",
-      STABILITE: "Stabilité & Équilibre"
-    }[k]);
-    pdf.setFont("helvetica","bold"); pdf.setFontSize(16);
-    pdf.text("Analyse personnalisée", W/2, 120, { align:"center" });
+    try { pdf.addImage(logoImg, "JPEG", (W-120)/2, 24, 120, 48); } catch(e){}
+    pdf.setFont("helvetica","bold"); pdf.setFontSize(16); pdf.text("Analyse personnalisée", W/2, 100, { align:"center" });
     pdf.setFont("helvetica","",12);
-    let analysis = `Dominante : ${label(domK)} (${domV}%)\nSecondaire : ${label(secK)} (${secV}%)\n\n`;
-    const tips = {
-      REUSSITE: ["Objectifs SMART","Suivi des progrès","Imagerie de performance"],
-      LIBERTE: ["Méthodes actives","Projets choisis","Créneaux d’exploration"],
-      APPARTENANCE: ["Travail en équipe","Feedbacks réguliers","Rituels de soutien"],
-      STABILITE: ["Routines","Sommeil & récupération","Cadre clair / check-lists"],
-    }[domK];
-    analysis += "Focus : " + tips.join(" • ") + "\n\n";
-    const school = {
-      REUSSITE: "Révisions par objectifs, planning hebdo, techniques d'examens.",
-      LIBERTE: "Mindmaps, exposés choisis, méthode Feynman, flashcards.",
-      APPARTENANCE: "Groupes d’étude, tutorat, accountability partner.",
-      STABILITE: "Routine stable, environnement calme, Pomodoro."
-    }[domK];
-    const sport = {
-      REUSSITE: "Objectifs compétition, stats, imagerie.",
-      LIBERTE: "Variété d’exercices, exploration technique.",
-      APPARTENANCE: "Cohésion, rôle clair, communication positive.",
-      STABILITE: "Échauffement standardisé, récupération, charge & nutrition."
-    }[domK];
-    const life = {
-      REUSSITE: "Modèles inspirants, carnet de réussites.",
-      LIBERTE: "Espaces créatifs et limites saines.",
-      APPARTENANCE: "Projets collectifs, gratitude.",
-      STABILITE: "Hygiène de vie, respiration, routines."
-    }[domK];
-    analysis += "Études : " + school + "\nSport : " + sport + "\nVie perso : " + life;
-    const wrapped = pdf.splitTextToSize(analysis, W - 2*M);
-    pdf.text(wrapped, M, 160);
-    pdf.setTextColor(150); pdf.setFontSize(9);
-    pdf.text("© Académie de Performances — Rapport personnalisé", W/2, 820, { align:"center" });
-    pdf.setTextColor(0);
+    pdf.text(`Dominante : ${labels[domK]} (${domV}%)`, M, 130);
+    pdf.text(`Secondaire : ${labels[secK]} (${secV}%)`, M, 150);
+    pdf.text("Tes 4 valeurs phares :", M, 180);
+    const vText = "⭐ " + vals.join("   ⭐ ");
+    pdf.text(vText, M, 200);
+    pdf.setTextColor(150); pdf.setFontSize(9); pdf.text("© Académie de Performances — Rapport personnalisé", W/2, 820, { align:"center" }); pdf.setTextColor(0);
 
-    // PAGE 3 — Graphiques + %
+    // Page 3
     pdf.addPage();
-    try { pdf.addImage(logoImg, "PNG", (W-64)/2, 28, 64, 64); } catch(e){}
-    pdf.setFont("helvetica","bold"); pdf.setFontSize(16);
-    pdf.text("Résultats visuels", W/2, 110, { align:"center" });
-
-    const chartCanvas = document.getElementById("valuesChart");
-    const dataUrl = chartCanvas.toDataURL("image/png");
-    const graphW = 440, graphH = 220;
-    pdf.addImage(dataUrl, "PNG", (W-graphW)/2, 140, graphW, graphH);
-
+    try { pdf.addImage(logoImg, "JPEG", (W-120)/2, 24, 120, 48); } catch(e){}
+    pdf.setFont("helvetica","bold"); pdf.setFontSize(16); pdf.text("Résultats visuels", W/2, 100, { align:"center" });
+    const dataUrl = document.getElementById("valuesChart").toDataURL("image/png");
+    pdf.addImage(dataUrl, "PNG", (W-460)/2, 120, 460, 230);
     pdf.setFont("helvetica","",12);
-    const pctText = `Réussite: ${pct.REUSSITE}% | Liberté: ${pct.LIBERTE}% | Appartenance: ${pct.APPARTENANCE}% | Stabilité: ${pct.STABILITE}%`;
-    pdf.text(pctText, W/2, 380, { align:"center" });
-
-    pdf.setTextColor(150); pdf.setFontSize(9);
-    pdf.text("© Académie de Performances — Rapport personnalisé", W/2, 820, { align:"center" });
-    pdf.setTextColor(0);
+    pdf.text(`Réussite: ${pct.REUSSITE}%   |   Liberté: ${pct.LIBERTE}%   |   Appartenance: ${pct.APPARTENANCE}%   |   Stabilité: ${pct.STABILITE}%`, W/2, 370, { align:"center" });
+    pdf.text("Valeurs phares :", W/2, 400, { align:"center" });
+    pdf.text(vText, W/2, 420, { align:"center" });
+    pdf.setTextColor(150); pdf.setFontSize(9); pdf.text("© Académie de Performances — Rapport personnalisé", W/2, 820, { align:"center" }); pdf.setTextColor(0);
 
     pdf.save("Test_Valeurs_12_25.pdf");
   }
 
-  function goToResults(){
-    introSection.classList.add("hidden");
-    quizSection.classList.add("hidden");
-    resultSection.classList.remove("hidden");
-    showResults();
-  }
+  function goToResults(){ introSection.classList.add("hidden"); quizSection.classList.add("hidden"); resultSection.classList.remove("hidden"); showResults(); }
 
   // Events
-  startBtn.addEventListener("click", () => {
-    state.name = (document.getElementById("userName").value || "").trim();
-    introSection.classList.add("hidden");
-    quizSection.classList.remove("hidden");
-    state.idx = 0;
-    renderQuestion();
-  });
-
-  nextBtn.addEventListener("click", () => {
-    const sel = collectSelection();
-    if(!sel){ alert("Choisis une option pour continuer."); return; }
-    state.answers[state.idx] = sel;
-    if(state.idx < questions.length - 1){
-      state.idx += 1;
-      renderQuestion();
-    } else {
-      goToResults();
-    }
-  });
-
-  prevBtn.addEventListener("click", () => {
-    if(state.idx === 0) return;
-    state.idx -= 1;
-    renderQuestion();
-  });
-
-  restartBtn.addEventListener("click", () => {
-    state.idx = 0;
-    state.answers = Array(questions.length).fill(null);
-    resultSection.classList.add("hidden");
-    introSection.classList.remove("hidden");
-  });
-
-  pdfBtn.addEventListener("click", () => {
-    generatePDF();
-  });
+  startBtn.addEventListener("click", () => { state.name = (document.getElementById("userName").value || "").trim(); introSection.classList.add("hidden"); quizSection.classList.remove("hidden"); state.idx = 0; renderQuestion(); });
+  nextBtn.addEventListener("click", () => { const sel = collectSelection(); if(!sel){ alert("Choisis une option pour continuer."); return; } state.answers[state.idx] = sel; if(state.idx < questions.length - 1){ state.idx += 1; renderQuestion(); } else { goToResults(); } });
+  prevBtn.addEventListener("click", () => { if(state.idx === 0) return; state.idx -= 1; renderQuestion(); });
+  restartBtn.addEventListener("click", () => { state.idx = 0; state.answers = Array(questions.length).fill(null); resultSection.classList.add("hidden"); introSection.classList.remove("hidden"); });
+  pdfBtn.addEventListener("click", () => generatePDF());
 })();
